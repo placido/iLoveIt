@@ -8,7 +8,6 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
-#import "Thumbnail.h"
 
 @interface Photo : NSObject
 {
@@ -16,18 +15,15 @@
     NSString *caption;
     NSURL *urlThumbnail;
     NSURL *urlLarge;
-    Thumbnail *thumbnail;
     CLLocation *location;
 }
 
--(id)initWithPhotoId:(NSString*)photoId caption:(NSString*)caption x:(int)myX y:(int)myY location:(CLLocation*)location;
--(void)loadThumbnail;
+-(id)initWithPhotoId:(NSString*)photoId caption:(NSString*)caption location:(CLLocation*)location;
 
 @property(nonatomic, retain) NSString *photoId;
 @property(nonatomic, retain) NSString *caption;
 @property(nonatomic, retain) NSURL *urlThumbnail;
 @property(nonatomic, retain) NSURL *urlLarge;
-@property(nonatomic, retain) Thumbnail *thumbnail;
 @property(nonatomic, retain) CLLocation *location;
 
 @end

@@ -11,10 +11,10 @@
 @implementation GridViewController
 @synthesize scrollView = _scrollView;
 @synthesize spinner=_spinner;
+@synthesize thumbnails=_thumbnails;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
-    NSLog(@"Init view");
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         UIScrollView *myScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, 320, 480)];
@@ -37,6 +37,11 @@
         self.spinner = mySpinner;
         [mySpinner release];
         [self.view addSubview:self.spinner];
+        
+        // Create the thumbnails array
+        NSMutableArray *myThumbnails = [[NSMutableArray alloc] initWithObjects:nil];
+        self.thumbnails = myThumbnails;
+        [myThumbnails release];
 
     }
     return self;
@@ -53,14 +58,12 @@
 
 - (void)viewDidLoad
 {
-    NSLog(@"Loaded view");
     [super viewDidLoad];
 
 }
 
 - (void)viewDidUnload
 {
-    NSLog(@"Unloaded view");
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
@@ -75,6 +78,7 @@
 - (void)dealloc
 {
     NSLog(@"Deallocating");
+    [_thumbnails release];
     [_spinner release];
     [_scrollView release];
     [super dealloc];

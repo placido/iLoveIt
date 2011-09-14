@@ -12,9 +12,10 @@
 {
     UIScrollView *scrollView;
     UIActivityIndicatorView *spinner;
+    NSMutableArray *thumbnails;
 }
 
 @property (nonatomic, retain) IBOutlet UIScrollView *scrollView;
 @property (nonatomic, retain) IBOutlet UIActivityIndicatorView *spinner;
-
+@property (nonatomic, retain) NSMutableArray *thumbnails;
 @end

@@ -9,6 +9,8 @@
 #import "Localisation.h"
 #import "SBJson.h"
 #import "TableAppAppDelegate.h"
+#import "Thumbnail.h"
+#import "GridViewController.h"
 
 @implementation Localisation
 
@@ -23,6 +25,7 @@
         aLocationManager.delegate = self;
         self.locationManager = aLocationManager;
         [aLocationManager release];
+        photos = [[NSMutableArray alloc] initWithObjects:nil];
     }
     return self;
 }
@@ -91,9 +94,8 @@
     TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
     delegate.gridViewController.navigationItem.title = [NSString stringWithFormat:@"I love %@", [neighbourhoods objectAtIndex:0]];
     
-    // Process the photos
+    // Populate the array of photos
     photos = [NSMutableArray array];
-    int x = 0; int y = 0;
     NSArray *jsonPhotos = [jsonObject objectForKey:@"photos"];
     for (NSDictionary *photo in jsonPhotos) {
         NSDictionary *photoIdDict = [photo objectForKey:@"_id"];
@@ -103,13 +105,24 @@
         NSNumber *latitude = [coordinates objectAtIndex:0];
         NSNumber *longitude = [coordinates objectAtIndex:1];
         CLLocation *location = [[CLLocation alloc] initWithLatitude:latitude.doubleValue longitude:longitude.doubleValue];   
-        NSLog(@"Photo id: %@", photoId);
-        NSLog(@"Photo caption: %@", caption);
-        NSLog(@"Photo coordinates: %@, %@", latitude, longitude);
-
-        Photo *photo = [[Photo alloc] initWithPhotoId:photoId caption:caption x:x y:y location:location];
-        [location release];
+        NSLog(@"Photo id: %@ / Caption: %@ / Coordinates: (%@, %@)", photoId, caption, latitude, longitude);
+        Photo *photo = [[Photo alloc] initWithPhotoId:photoId caption:caption location:location];
         [photos addObject:photo];
+
+        // TO DO: release photo when appropriate
+        [location release];
+    }
+    
+    // Stop the spinner
+    [delegate.gridViewController.spinner stopAnimating];
+    
+    // Populate the array of thumbnails
+    int x = 0; int y = 0; 
+    for (Photo *photo in photos) {
+        Thumbnail* thumbnail = [[Thumbnail alloc] initWithX:x y:y photo:photo];
+        // TO DO: release thumbnail when appropriate
+        [delegate.gridViewController.thumbnails addObject:thumbnail];
+        [thumbnail load];
         x += 160;
         if (x>160) {
             x = 0;
@@ -118,18 +131,21 @@
     }
 
     // Update the scrollView dimensions
-    [delegate.gridViewController.scrollView setContentSize:CGSizeMake(320, y+160)];
-    // Stop the spinner
-    [delegate.gridViewController.spinner stopAnimating];
-    // Start loading thumbnails asynchronously
-    for (Photo* photo in photos) {
-        [photo loadThumbnail];
-    } 
+    if (x > 0) { 
+        y +=160; 
+    }
+    [delegate.gridViewController.scrollView setContentSize:CGSizeMake(320, y)];
+    
+    // Start loading!
+    for (Thumbnail *thumbnail in delegate.gridViewController.thumbnails) {
+        [thumbnail load];
+    }
 }
 
 - (void)dealloc
 {
     NSLog(@"Deallocating");
+    [photos release];
     [_neighbourhoods release];
     [_locationManager stopUpdatingLocation];
     [_locationManager release];

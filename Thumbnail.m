@@ -27,7 +27,7 @@
     return self;
 }
 
-- (id)initWithX:(int)myX y:(int)myY photo:(id)myPhoto {
+- (id)initWithX:(int)myX y:(int)myY photo:(Photo*)myPhoto {
     self = [self init];
     self.x = myX;
     self.y = myY;
@@ -58,23 +58,42 @@
 }
 
 
+- (void)load
+{
+    [self.spinner startAnimating];
+    NSOperationQueue *queue = [NSOperationQueue new];
+    NSInvocationOperation *operation = [[NSInvocationOperation alloc] 
+                                        initWithTarget:self
+                                        selector:@selector(loadImageAtUrl:) 
+                                        object:self.photo.urlThumbnail];
+    [queue addOperation:operation]; 
+    [operation release]; 
+}
+
+-(void)loadImageAtUrl:(NSURL*)url {
+    NSLog(@"Loading %@", url.absoluteString);
+    NSData* imageData = [[NSData alloc] initWithContentsOfURL:url];
+    UIImage* image = [[[UIImage alloc] initWithData:imageData] autorelease];
+    [imageData release];
+    [self performSelectorOnMainThread:@selector(displayImage:) withObject:image waitUntilDone:NO];
+}
+
+- (void)displayImage:(UIImage *)image {
+    self.imageView = [[UIImageView alloc]initWithImage:image];
+    self.imageView.frame = CGRectMake(self.x, self.y, 159, 159);
+    TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
+    UIScrollView *scrollView = delegate.gridViewController.scrollView;
+    [scrollView addSubview:self.imageView];
+    [self.spinner stopAnimating];
+    NSLog(@"Added image view");    
+}
+
 - (IBAction)buttonClicked:(id)sender
 {
     Photo *myPhoto = (Photo *)(self.photo);
     TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
     [delegate.detailViewController setThePhoto:myPhoto];
     [delegate.navigationController pushViewController:delegate.detailViewController animated:YES];
-
-}
-
-- (void)setImage:(UIImage *)image {
-    self.imageView = [[UIImageView alloc]initWithImage:image];
-    // self.imageView.center = CGPointMake(self.x, self.y);
-    self.imageView.frame = CGRectMake(self.x, self.y, 159, 159);
-    TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
-    UIScrollView *scrollView = delegate.gridViewController.scrollView;
-    [scrollView addSubview:self.imageView];
-    [self.spinner stopAnimating];
 }
 
 - (void)dealloc

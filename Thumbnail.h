@@ -7,26 +7,27 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "Photo.h"
 
 @interface Thumbnail : NSObject
 {
+    Photo* photo;
     UIImageView *imageView;
     UIActivityIndicatorView *spinner;
     UIButton *button;
     int x;
     int y;
-    id photo;
 }
 
--(id)initWithX:(int)myX y:(int)myY photo:(id)myPhoto;
--(void)setImage:(UIImage *)image;
+-(id)initWithX:(int)myX y:(int)myY photo:(Photo*)myPhoto;
+-(void)load;
 -(IBAction)buttonClicked:(id)sender;
 
+@property(nonatomic, retain) Photo* photo;
 @property(nonatomic, retain) UIImageView *imageView;
 @property(nonatomic, retain) UIActivityIndicatorView *spinner;
 @property(nonatomic, retain) UIButton *button;
 @property(assign) int x;
 @property(assign) int y;
-@property(assign) id photo;
 
 @end
