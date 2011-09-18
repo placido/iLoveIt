@@ -84,7 +84,7 @@
 - (void)requestFailed:(ASIHTTPRequest *)theRequest
 {
     NSError *error = [request error];
-    NSLog(@"Thumbnail request failed: %@", error.localizedDescription);
+    NSLog(@"Thumbnail request failed : %@", error.localizedDescription);
 }
 
 - (void)requestFinished:(ASIHTTPRequest *)theRequest
