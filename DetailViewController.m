@@ -8,6 +8,7 @@
 
 #import "DetailViewController.h"
 #import "TableAppAppDelegate.h"
+#import <CoreLocation/CoreLocation.h>
 
 @implementation DetailViewController
 @synthesize scrollView = _scrollView;
@@ -16,7 +17,8 @@
 @synthesize spinner=_spinner;
 @synthesize photo=_photo;
 @synthesize mapView=_mapView;
-@synthesize pinView=_pinView;
+@synthesize pin=_pin;
+@synthesize request=_request;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -35,15 +37,17 @@
         [myScrollView setContentSize:CGSizeMake(320, 740)];
         self.scrollView = myScrollView;
         [self.view addSubview:self.scrollView];
-        [myScrollView release];
-        
+                
         // Create the spinner
         UIActivityIndicatorView *mySpinner = [[UIActivityIndicatorView alloc]initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
         mySpinner.center = CGPointMake(160, 160);
         mySpinner.hidesWhenStopped = YES;
         [mySpinner startAnimating];
         self.spinner = mySpinner;
-        [mySpinner release];
+        
+        // Create the image view
+        UIImageView *myImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 320, 320)];
+        self.imageView = myImageView;
         
         // Create the UILabel caption
         UILabel *myCaption = [[UILabel alloc] initWithFrame:CGRectMake(10, 330, 280, 20)];
@@ -51,22 +55,31 @@
         myCaption.textColor = [UIColor whiteColor];
         myCaption.backgroundColor = [UIColor clearColor];
         self.caption = myCaption;
-        [myCaption release];
         
         // Create the map
         MKMapView *myMapView = [[MKMapView alloc] initWithFrame:CGRectMake(0, 360, 320, 320)];
+        myMapView.showsUserLocation = YES;
         self.mapView = myMapView;
-        [myMapView release];
         
         // Create the pin
-        MKPinAnnotationView *myPinView = [[MKPinAnnotationView alloc] init];
-        self.pinView = myPinView;
-        [myPinView release];
+        MapPin *myPin = [[MapPin alloc] init];
+        self.pin = myPin;
+        [self.mapView addAnnotation:self.pin];
         
         // Attach the elements to the scrollView
         [self.scrollView addSubview:self.spinner];
         [self.scrollView addSubview:self.caption];
         [self.scrollView addSubview:self.mapView];
+        [self.scrollView addSubview:self.imageView];
+
+        // release 
+        [myImageView release];
+        [myScrollView release];
+        [mySpinner release];
+        [myCaption release];
+        [myMapView release];
+        [myPin release];
+
 
     }
     return self;
@@ -86,46 +99,52 @@
     self.caption.text = self.photo.caption;
     NSLog(@"Showing detailed view of %@", self.photo.caption);
     
-    // remove existing image view
-    if (self.imageView) {
-        [self.imageView removeFromSuperview];
-        [self.imageView release];
-        [self.spinner startAnimating];
-    }
+    [self.imageView setHidden:YES];
+    [self.spinner startAnimating];
     
     // Center the map
     MKCoordinateSpan span = MKCoordinateSpanMake(0.005f, 0.005f);  // Hard-coded zoom level
     MKCoordinateRegion region = MKCoordinateRegionMake([self.photo.location coordinate], span);
     [self.mapView setRegion:region animated:YES];
-    // TO DO: SET THE PIN    
+    
+    // Set the pin   
+    [self.pin setCoordinate:self.photo.location.coordinate title:self.photo.caption subtitle:@""];
     
     // Load URL asynchronously
-    NSOperationQueue *queue = [NSOperationQueue new];
-    NSInvocationOperation *operation = [[NSInvocationOperation alloc] 
-                                        initWithTarget:self
-                                        selector:@selector(loadImageAtUrl:) 
-                                        object:self.photo.urlLarge];
-    [queue addOperation:operation]; 
-    [operation release];
+    ASIHTTPRequest *theRequest = [ASIHTTPRequest requestWithURL:self.photo.urlLarge];
+    [theRequest setDelegate:self];
+    [theRequest startAsynchronous];
+    self.request = theRequest; 
+
+   // NSOperationQueue *queue = [NSOperationQueue new];
+   // NSInvocationOperation *operation = [[NSInvocationOperation alloc] 
+  //                                      initWithTarget:self
+  //                                      selector:@selector(loadImageAtUrl:) 
+  //                                      object:self.photo.urlLarge];
+  //  [queue addOperation:operation]; 
+  //  [operation release];
 }
 
--(void)loadImageAtUrl:(NSURL*)url {
-    NSLog(@"Loading %@", url.absoluteString);
-    NSData* imageData = [[NSData alloc] initWithContentsOfURL:url];
-    UIImage* image = [[[UIImage alloc] initWithData:imageData] autorelease];
-    [imageData release];
+- (void)requestFailed:(ASIHTTPRequest *)theRequest
+{
+    // NSError *error = [request error];
+    NSLog(@"Large image request failed");
+}
+
+- (void)requestFinished:(ASIHTTPRequest *)theRequest
+{    
+    NSData *imageData = [theRequest responseData];
+    UIImage* image = [[UIImage alloc] initWithData:imageData];
     [self performSelectorOnMainThread:@selector(displayImage:) withObject:image waitUntilDone:NO];
 }
 
 -(void)displayImage:(UIImage *)image {
-
-    // TO DO: Check memory allocation. SHould init the object once and just use the setImage selector
-    self.imageView = [[UIImageView alloc]initWithImage:image];
-    self.imageView.frame =  CGRectMake(0, 0, 320, 320);
-    [self.scrollView addSubview:self.imageView];
     [self.spinner stopAnimating];
-
-    NSLog(@"Added image view");    
+    // release existing image
+    [self.imageView.image release];
+    // set new image
+    [self.imageView setImage:image];
+    [self.imageView setHidden:NO];
 }
 
 #pragma mark - View lifecycle
@@ -152,7 +171,8 @@
 - (void)dealloc
 {
     NSLog(@"Deallocating");
-    [_pinView release];
+    [_request clearDelegatesAndCancel];
+    [_pin release];
     [_scrollView release];
     [_mapView release];
     [_imageView release];

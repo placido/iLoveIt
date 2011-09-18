@@ -15,12 +15,17 @@
     NSMutableArray *neighbourhoods;
     NSMutableArray *photos;
     CLLocationManager *locationManager;
-    NSMutableData *jsonData;
+    NSOperationQueue *requestQueue;
+    NSOperationQueue *responseQueue;
+    CLLocation *bestEffortLocation;
+    int nbLocationUpdates;
 }
 -(void)startLocalisation;
+-(void)startRequest;
 
 @property (nonatomic, retain) CLLocationManager *locationManager;
-@property (nonatomic, retain) NSMutableSet *neighbourhoods;
+@property (nonatomic, retain) NSMutableArray *neighbourhoods;
+@property (nonatomic, retain) CLLocation *bestEffortLocation;
 
 @end
 

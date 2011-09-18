@@ -15,6 +15,7 @@
 @synthesize caption = _caption;
 @synthesize neighbourhood = _neighbourhood;
 @synthesize send = _send;
+@synthesize progress = _progress;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -24,7 +25,7 @@
         self.view.backgroundColor = [UIColor blackColor];
 
         // Initialise caption input field
-        CGRect frame = CGRectMake(10,10,300,30);
+        CGRect frame = CGRectMake(10,10,230,30);
         UITextField *aCaption = [[UITextField alloc] initWithFrame:frame];
         aCaption.borderStyle = UITextBorderStyleRoundedRect;
         aCaption.textColor = [UIColor blackColor];
@@ -39,34 +40,27 @@
         [aCaption release];
         [self.view addSubview:self.caption];
         
+        // Initialise progress bar
+        UIProgressView *myProgress = [[UIProgressView alloc] initWithFrame:CGRectMake(10, 50, 300, 20)];
+        myProgress.progressViewStyle = UIProgressViewStyleBar;
+        self.progress = myProgress;
+        [self.view addSubview:self.progress];
+        [myProgress release];
+        
         // Initialise picker
-        UIPickerView *myNeighbourhood = [[UIPickerView alloc] initWithFrame:CGRectMake(10, 50, 150, 30)];
-        myNeighbourhood.backgroundColor = [UIColor clearColor];
-        myNeighbourhood.delegate = self; 
-        myNeighbourhood.showsSelectionIndicator = YES;
-       // TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
-       // NSMutableArray *neighbourhoods = delegate.localisation.neighbourhoods;
-       // for(NSString *name in neighbourhoods) {
-       //     NSLog(@"Picker name %@", name);
-       // }
-        
-      //  [[[StatesPickerItem alloc] initWithName:@"Wyoming" value:@"WY" flag:[UIImage imageNamed:@"Wyoming.png"]] autorelease], nil];
-       // for (StatesPickerItem *item in pickerItems) {
-        //    [mypicker selectRow:[pickerItems indexOfObject:item] inComponent:0 animated:YES];
-       // }
-
-        
-        self.neighbourhood = myNeighbourhood;
-        [myNeighbourhood release];
-        // [self.view addSubview:self.neighbourhood];
+       // UIPickerView *myNeighbourhood = [[UIPickerView alloc] initWithFrame:CGRectMake(10, 40, 320, 50)];
+       // myNeighbourhood.delegate = self; 
+       // myNeighbourhood.dataSource = self;
+       // self.neighbourhood = myNeighbourhood;
+       // [myNeighbourhood release];
+       // [self.view addSubview:self.neighbourhood];
         
         // Initialise button
         UIButton *mySend= [UIButton buttonWithType:UIButtonTypeRoundedRect];
-        mySend.frame = CGRectMake(250, 45, 60, 30);
+        mySend.frame = CGRectMake(250, 10, 60, 30);
         [mySend setTitle:@"Send" forState:UIControlStateNormal];
         [mySend addTarget:self action:@selector(sendPhoto) forControlEvents:UIControlEventTouchUpInside];
         self.send = mySend;
-        [mySend release];
         [self.view addSubview:self.send];
         
         // Initialise image view
@@ -80,6 +74,31 @@
     return self;
 }
 
+- (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)thePickerView {
+    return 1;
+}
+
+- (NSInteger)pickerView:(UIPickerView *)thePickerView numberOfRowsInComponent:(NSInteger)component {
+    TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
+    return [delegate.localisation.neighbourhoods count];
+}
+
+- (NSString *)pickerView:(UIPickerView *)thePickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component {
+    TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
+    return [delegate.localisation.neighbourhoods objectAtIndex:row];
+}
+
+- (void)pickerView:(UIPickerView *)thePickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component {
+    TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
+    NSLog(@"Selected %@ at index: %i", [delegate.localisation.neighbourhoods objectAtIndex:row], row);
+}
+
+// tell the picker the width of each row for a given component
+- (CGFloat)pickerView:(UIPickerView *)pickerView widthForComponent:(NSInteger)component {
+    int sectionWidth = 200;
+    return sectionWidth;
+}
+
 -(void)sendPhoto 
 {
     NSLog(@"Sending photo with caption  %@, user %@", self.caption.text, [UIDevice currentDevice].uniqueIdentifier);
@@ -88,12 +107,14 @@
     // Prepare the HTTP Post request
     NSURL *url = [NSURL URLWithString:@"http://ec2-79-125-90-3.eu-west-1.compute.amazonaws.com:8080/ilove/api/photo"];
     ASIFormDataRequest *request = [[ASIFormDataRequest alloc] initWithURL:url];
+    request.delegate = self;
+    
     // Pass user and caption
     [request setPostValue:[UIDevice currentDevice].uniqueIdentifier forKey:@"user"];
     [request setPostValue:self.caption.text forKey:@"caption"];
     TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
-    // Pass coordindates
-    CLLocation *location = delegate.localisation.locationManager.location;
+    // Pass coordindate
+    CLLocation *location = delegate.localisation.bestEffortLocation;
     NSString *lat = [NSString stringWithFormat:@"%f", location.coordinate.latitude];
     NSString *lng = [NSString stringWithFormat:@"%f", location.coordinate.longitude];
     [request setPostValue:lat forKey:@"lat"];
@@ -102,47 +123,35 @@
     NSData *imageData = UIImageJPEGRepresentation(self.imageView.image, 100);
     [request setData:imageData withFileName:@"photo.jpg" andContentType:@"image/jpeg" forKey:@"myPhoto"];
 
-    // Start the request
-    [request startSynchronous];
-    NSError *error = [request error];
-    if (!error) {
-        NSString *response = [request responseString];
-        NSLog(@"Response: %@", response);
-    }
+    // Set the progress bar
+    [request setUploadProgressDelegate:self.progress];
+    
+    // Start the asynchronous request
+    [request startAsynchronous];
+}
+
+- (void)requestFinished:(ASIHTTPRequest *)request
+{
+    NSString *responseString = [request responseString];
+    NSLog(@"Got response: %@", responseString);
     [request release];
+    TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
+    [delegate.navigationController popToRootViewControllerAnimated:YES];
+    [delegate.localisation startRequest];
+}
+
+- (void)requestFailed:(ASIHTTPRequest *)request
+{
+    NSError *error = [request error];
+    NSLog(@"Got error: %@", error);
+    [request release];
+    TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
+    [delegate.navigationController popToRootViewControllerAnimated:YES];
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {
     [textField resignFirstResponder]; // remove keyboard
     return NO;
-}
-
--(void)pickerView:(UIPickerView *)pickerView didSelectRow: (NSInteger)row inComponent:(NSInteger)component {
-    // Handle the selection
-}
-
-// tell the picker how many rows are available for a given component
-- (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component {
-    NSUInteger numRows = 5;
-    return numRows;
-}
-
-// tell the picker how many components it will have
-- (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView {
-    return 1;
-}
-
-// tell the picker the title for a given component
-- (NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component {
-    NSString *title;
-    title = [@"" stringByAppendingFormat:@"%d",row];
-    return title;
-}
-
-// tell the picker the width of each row for a given component
-- (CGFloat)pickerView:(UIPickerView *)pickerView widthForComponent:(NSInteger)component {
-    int sectionWidth = 150;
-    return sectionWidth;
 }
 
 - (void)didReceiveMemoryWarning
@@ -177,6 +186,7 @@
 - (void)dealloc
 {
     NSLog(@"Deallocating");
+    [_progress release];
     [_send release];
     [_imageView release];
     [_neighbourhood release];

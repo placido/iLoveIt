@@ -91,10 +91,12 @@
     switch(buttonIndex) {
         case 0:
             self.imagePickerController.sourceType = UIImagePickerControllerSourceTypeCamera;
+            isFromCamera = YES;
             [self.gridViewController presentModalViewController:self.imagePickerController animated:YES];
             break;
         case 1:
             self.imagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+            isFromCamera = NO;
             [self.gridViewController presentModalViewController:self.imagePickerController animated:YES];
             break;
     }
@@ -105,6 +107,9 @@
                   editingInfo:(NSDictionary *)editingInfo
 {
     NSLog(@"Got new image");
+    if (isFromCamera) {
+        UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
+    }
     [self.gridViewController dismissModalViewControllerAnimated:YES];
     [self.uploadViewController.imageView setImage:image];
     [self.navigationController pushViewController:self.uploadViewController animated:YES];

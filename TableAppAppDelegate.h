@@ -23,6 +23,7 @@
     UIImagePickerController *imagePickerController;
     UIActionSheet *actionSheet;
     Localisation *localisation;
+    Boolean isFromCamera;
 }
 
 -(void) choosePhoto;

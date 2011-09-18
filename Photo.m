@@ -31,7 +31,7 @@
 - (id) initWithPhotoId:(NSString *)myPhotoId caption:(NSString *)myCaption location:(CLLocation *)myLocation
 {
     self = [self init];
-    NSLog(@"Initialising photo %@ with caption %@", self, myCaption);
+   // NSLog(@"Initialising photo %@ with caption %@", self, myCaption);
     self.photoId = myPhotoId;
     self.caption = myCaption;
     NSString *baseUrl = [NSString stringWithFormat:@"http://d1w26viojcn1vr.cloudfront.net/uploads/%@/", self.photoId];

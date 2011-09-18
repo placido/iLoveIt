@@ -8,6 +8,7 @@
 
 #import "Thumbnail.h"
 #import "TableAppAppDelegate.h"
+#import "ASIHTTPRequest.h"
 
 @implementation Thumbnail
 @synthesize imageView=_imageView;
@@ -16,6 +17,7 @@
 @synthesize x=_x;
 @synthesize y=_y;
 @synthesize photo=_photo;
+@synthesize request=_request;
 
 - (id)init
 {
@@ -33,6 +35,12 @@
     self.y = myY;
     self.photo = myPhoto;
 
+    // Create image
+    UIImageView *myImageView = [[UIImageView alloc] init];
+    myImageView.frame = CGRectMake(self.x, self.y, 159, 159);
+    self.imageView = myImageView;
+    [myImageView release];
+    
     // Create spinner
     UIActivityIndicatorView *mySpinner = [[UIActivityIndicatorView alloc]initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
     mySpinner.center = CGPointMake(myX+80, myY+80);
@@ -45,47 +53,55 @@
     myButton.frame = CGRectMake(myX, myY, 159, 159);
     [myButton addTarget:self action:@selector(buttonClicked:) forControlEvents:UIControlEventTouchUpInside];
     self.button = myButton;
-    [myButton release];
     
     // Add spinner and button to ScrollView
     TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
     UIScrollView *theScrollView = delegate.gridViewController.scrollView;
     [theScrollView addSubview:self.spinner];  
     [theScrollView addSubview:self.button];
-    NSLog(@"Added spinner and button");    
 
     return self; 
 }
 
+-(void)moveToX:(int)myX y:(int)myY;
+{
+    self.x = myX;
+    self.y = myY;
+    self.spinner.center = CGPointMake(myX+80, myY+80);
+    self.button.frame = CGRectMake(myX, myY, 159, 159);
+    self.imageView.frame = CGRectMake(myX, myY, 159, 159);
+}
 
 - (void)load
 {
     [self.spinner startAnimating];
-    NSOperationQueue *queue = [NSOperationQueue new];
-    NSInvocationOperation *operation = [[NSInvocationOperation alloc] 
-                                        initWithTarget:self
-                                        selector:@selector(loadImageAtUrl:) 
-                                        object:self.photo.urlThumbnail];
-    [queue addOperation:operation]; 
-    [operation release]; 
+    ASIHTTPRequest *theRequest = [ASIHTTPRequest requestWithURL:self.photo.urlThumbnail];
+    [theRequest setDelegate:self];
+    [theRequest startAsynchronous];
+    self.request = theRequest; 
 }
 
--(void)loadImageAtUrl:(NSURL*)url {
-    NSLog(@"Loading %@", url.absoluteString);
-    NSData* imageData = [[NSData alloc] initWithContentsOfURL:url];
+- (void)requestFailed:(ASIHTTPRequest *)theRequest
+{
+    NSError *error = [request error];
+    NSLog(@"Thumbnail request failed: %@", error.localizedDescription);
+}
+
+- (void)requestFinished:(ASIHTTPRequest *)theRequest
+{    
+    NSData *imageData = [theRequest responseData];
     UIImage* image = [[[UIImage alloc] initWithData:imageData] autorelease];
     [imageData release];
     [self performSelectorOnMainThread:@selector(displayImage:) withObject:image waitUntilDone:NO];
 }
 
 - (void)displayImage:(UIImage *)image {
-    self.imageView = [[UIImageView alloc]initWithImage:image];
-    self.imageView.frame = CGRectMake(self.x, self.y, 159, 159);
+    [self.imageView setImage:image];
     TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
     UIScrollView *scrollView = delegate.gridViewController.scrollView;
     [scrollView addSubview:self.imageView];
     [self.spinner stopAnimating];
-    NSLog(@"Added image view");    
+   // NSLog(@"Added image view");    
 }
 
 - (IBAction)buttonClicked:(id)sender
@@ -98,6 +114,7 @@
 
 - (void)dealloc
 {
+    [_request clearDelegatesAndCancel];
     [_imageView release];
     [_spinner release];
     [_button release];

@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "Photo.h"
+#import "ASIHTTPRequest.h"
 
 @interface Thumbnail : NSObject
 {
@@ -17,9 +18,11 @@
     UIButton *button;
     int x;
     int y;
+    ASIHTTPRequest *request;
 }
 
 -(id)initWithX:(int)myX y:(int)myY photo:(Photo*)myPhoto;
+-(void)moveToX:(int)myX y:(int)my;
 -(void)load;
 -(IBAction)buttonClicked:(id)sender;
 
@@ -29,5 +32,6 @@
 @property(nonatomic, retain) UIButton *button;
 @property(assign) int x;
 @property(assign) int y;
+@property(nonatomic, retain) ASIHTTPRequest* request;
 
 @end

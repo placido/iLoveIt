@@ -8,7 +8,9 @@
 
 
 #import "Photo.h"
+#import "MapPin.h"
 #import <MapKit/MapKit.h>
+#import "ASIHTTPRequest.h"
 
 @interface DetailViewController : UIViewController
 {
@@ -17,8 +19,9 @@
     UILabel *caption;
     UIActivityIndicatorView *spinner;
     MKMapView *mapView;
-    MKPinAnnotationView *pinView;
+    MapPin *pin;
     Photo *photo;
+    ASIHTTPRequest *request;
 }
 
 -(void)setThePhoto:(Photo *)photo;
@@ -29,5 +32,7 @@
 @property (nonatomic, retain) IBOutlet UIActivityIndicatorView *spinner;
 @property (nonatomic, retain) Photo *photo;
 @property (nonatomic, retain) MKMapView *mapView;
-@property (nonatomic, retain) MKPinAnnotationView *pinView;
+@property (nonatomic, retain) MapPin *pin;
+@property(nonatomic, retain) ASIHTTPRequest* request;
+
 @end

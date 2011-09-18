@@ -8,12 +8,13 @@
 
 #import <UIKit/UIKit.h>
 
-@interface UploadViewController : UIViewController <UIPickerViewDelegate>
+@interface UploadViewController : UIViewController <UITextFieldDelegate, UIPickerViewDataSource, UIPickerViewDelegate>
 {
     UIImageView *imageView;
     UITextField *caption;
     UIPickerView *neighbourhood;
     UIButton *send;
+    UIProgressView* progress;
 }
 -(void)sendPhoto;
 
@@ -21,5 +22,6 @@
 @property (nonatomic, retain) IBOutlet UITextField *caption;
 @property (nonatomic, retain) IBOutlet UIPickerView *neighbourhood;
 @property (nonatomic, retain) IBOutlet UIButton *send;
+@property (nonatomic, retain) IBOutlet UIProgressView *progress;
 
 @end
