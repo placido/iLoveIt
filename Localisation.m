@@ -92,7 +92,12 @@
 }
 
 -(void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error {
-    NSLog(@"Failed to receive location");
+    TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
+    [delegate.gridViewController.spinner stopAnimating];
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Failed to find location. Please try again later." 
+                                                   delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+    [alert show];
+    [alert release];
 }
 
 - (void)requestDone:(ASIHTTPRequest *)request
@@ -210,6 +215,15 @@
 {
     NSError *error = [request error];
     NSLog(@"Error: %@", error);
+    if ([photos count] == 0) {
+        // if photos array is empty display message. Otherwise fail silently
+        TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
+        [delegate.gridViewController.spinner stopAnimating];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Could not connect to server. Please try again later." 
+                                                       delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+        [alert show];
+        [alert release];
+    }
 }
 
 - (void)dealloc
