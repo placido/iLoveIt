@@ -45,13 +45,14 @@
 
 -(void)startLocalisation {
     [self.locationManager startUpdatingLocation];
-    // BEGIN: Simulate a didUpdateToLocation message
+    #if TARGET_IPHONE_SIMULATOR
+    // Simulate a didUpdateToLocation message
     NSDate* now = [[NSDate alloc] init];
-   CLLocation *simulatedLocation = [[CLLocation alloc] initWithCoordinate:CLLocationCoordinate2DMake(51.0, -1.0) altitude:1.0 horizontalAccuracy:kCLLocationAccuracyThreeKilometers verticalAccuracy:kCLLocationAccuracyThreeKilometers timestamp:now];
+    CLLocation *simulatedLocation = [[CLLocation alloc] initWithCoordinate:CLLocationCoordinate2DMake(51.0, -1.0) altitude:1.0 horizontalAccuracy:kCLLocationAccuracyThreeKilometers verticalAccuracy:kCLLocationAccuracyThreeKilometers timestamp:now];
     [self locationManager:self.locationManager didUpdateToLocation:simulatedLocation fromLocation:simulatedLocation];
     [simulatedLocation release];
     [now release];
-    // END
+    #endif
 }
 
 -(void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation {
@@ -84,6 +85,9 @@
     [request setDelegate:self];
     [request setDidFinishSelector:@selector(requestDone:)];
     [request setDidFailSelector:@selector(requestWentWrong:)];
+    [request setTimeOutSeconds:15];
+    [request setNumberOfTimesToRetryOnTimeout:2];
+    [request setShouldAttemptPersistentConnection:YES];
     [requestQueue addOperation:request];  
 }
 
@@ -195,8 +199,7 @@
             NSLog(@"Removing out-of-sight thumbnail \"%@\"", theThumbnail.photo.caption);
             [theThumbnail.imageView removeFromSuperview];
             [thumbnails removeObject:theThumbnail];
-            // TO DO: release thumbnail
-            // [theThumbnail release];
+            [theThumbnail release];
         }
     }
     
