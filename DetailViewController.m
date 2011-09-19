@@ -114,6 +114,8 @@
     ASIHTTPRequest *theRequest = [ASIHTTPRequest requestWithURL:self.photo.urlLarge];
     [theRequest setDelegate:self];
     [theRequest startAsynchronous];
+    [theRequest setTimeOutSeconds:15];
+    [theRequest setNumberOfTimesToRetryOnTimeout:2];
     self.request = theRequest; 
 
    // NSOperationQueue *queue = [NSOperationQueue new];
@@ -127,8 +129,9 @@
 
 - (void)requestFailed:(ASIHTTPRequest *)theRequest
 {
-    // NSError *error = [request error];
-    NSLog(@"Large image request failed");
+    NSError *error = [request error];
+    NSLog(@"Large image request failed: %@", [error localizedFailureReason]);
+    [self.spinner stopAnimating];
 }
 
 - (void)requestFinished:(ASIHTTPRequest *)theRequest
@@ -140,8 +143,6 @@
 
 -(void)displayImage:(UIImage *)image {
     [self.spinner stopAnimating];
-    // release existing image
-    [self.imageView.image release];
     // set new image
     [self.imageView setImage:image];
     [self.imageView setHidden:NO];

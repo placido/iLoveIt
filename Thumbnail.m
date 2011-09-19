@@ -77,6 +77,9 @@
     [self.spinner startAnimating];
     ASIHTTPRequest *theRequest = [ASIHTTPRequest requestWithURL:self.photo.urlThumbnail];
     [theRequest setDelegate:self];
+    [theRequest setTimeOutSeconds:15];
+    [theRequest setNumberOfTimesToRetryOnTimeout:2];
+    [theRequest setShouldAttemptPersistentConnection:YES];
     [theRequest startAsynchronous];
     self.request = theRequest; 
 }
@@ -84,14 +87,14 @@
 - (void)requestFailed:(ASIHTTPRequest *)theRequest
 {
     NSError *error = [request error];
-    NSLog(@"Thumbnail request failed : %@", error.localizedDescription);
+    NSLog(@"Thumbnail request failed: %@", [error localizedFailureReason]);
+    [self.spinner stopAnimating];
 }
 
 - (void)requestFinished:(ASIHTTPRequest *)theRequest
 {    
     NSData *imageData = [theRequest responseData];
     UIImage* image = [[[UIImage alloc] initWithData:imageData] autorelease];
-    [imageData release];
     [self performSelectorOnMainThread:@selector(displayImage:) withObject:image waitUntilDone:NO];
 }
 
