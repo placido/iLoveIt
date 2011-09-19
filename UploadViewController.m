@@ -103,6 +103,8 @@
 {
     NSLog(@"Sending photo with caption  %@, user %@", self.caption.text, [UIDevice currentDevice].uniqueIdentifier);
     [self.caption resignFirstResponder]; // remove keyboard
+    [self.send setHidden:YES]; // remove button
+    [self.send setEnabled:NO]; 
     
     // Prepare the HTTP Post request
     NSURL *url = [NSURL URLWithString:@"http://ec2-79-125-90-3.eu-west-1.compute.amazonaws.com:8080/ilove/api/photo"];
@@ -145,6 +147,10 @@
     NSError *error = [request error];
     NSLog(@"Got error: %@", error);
     [request release];
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Could not connect to server. Please try again later." 
+                                                   delegate:self cancelButtonTitle:@"OK" otherButtonTitles:nil];
+    [alert show];
+    [alert release];
     TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
     [delegate.navigationController popToRootViewControllerAnimated:YES];
 }

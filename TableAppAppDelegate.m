@@ -45,26 +45,18 @@
     UIBarButtonItem *aCameraButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCamera target:self action:@selector(choosePhoto)];
     self.gridViewController.navigationItem.rightBarButtonItem = aCameraButton;
     
-    // Create image picker controller
-    UIImagePickerController *anImagePickerController = [[UIImagePickerController alloc] init];
-    anImagePickerController.delegate = self;
-    anImagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-    anImagePickerController.allowsEditing = YES;
-    self.imagePickerController = anImagePickerController;
-    
     // Create the action sheet
     UIActionSheet *anActionSheet = [[UIActionSheet alloc] initWithTitle:nil delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:nil otherButtonTitles:@"Take photo", @"Choose photo", nil];
     self.actionSheet = anActionSheet;
-    
+       
     // Create localisation
     Localisation *aLocalisation = [[Localisation alloc] init];
     self.localisation = aLocalisation;
     
     // Release initial instances
     [aLocalisation release];
-    [anActionSheet release];
     [aCameraButton release];
-    [anImagePickerController release];
+    [anActionSheet release];
     [aNavigationController release];
     [aUploadViewController release];
     [aGridViewController release];
@@ -83,7 +75,15 @@
 
 - (void)choosePhoto
 {
+    // show the action sheet
     [self.actionSheet showInView:self.gridViewController.scrollView];
+    // create image picker controller
+    UIImagePickerController *anImagePickerController = [[UIImagePickerController alloc] init];
+    anImagePickerController.delegate = self;
+    anImagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    anImagePickerController.allowsEditing = YES;
+    self.imagePickerController = anImagePickerController;
+    [anImagePickerController release];
 }
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
@@ -91,12 +91,10 @@
     switch(buttonIndex) {
         case 0:
             self.imagePickerController.sourceType = UIImagePickerControllerSourceTypeCamera;
-            isFromCamera = YES;
             [self.gridViewController presentModalViewController:self.imagePickerController animated:YES];
             break;
         case 1:
             self.imagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-            isFromCamera = NO;
             [self.gridViewController presentModalViewController:self.imagePickerController animated:YES];
             break;
     }
@@ -107,11 +105,15 @@
                   editingInfo:(NSDictionary *)editingInfo
 {
     NSLog(@"Got new image");
-    if (isFromCamera) {
+    if (picker.sourceType == UIImagePickerControllerSourceTypeCamera) {
         UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
     }
     [self.gridViewController dismissModalViewControllerAnimated:YES];
+    self.imagePickerController = nil;
+    // TO DO: Could also set the detailViewController to nil to save memory
     [self.uploadViewController.imageView setImage:image];
+    [self.uploadViewController.send setHidden:NO];
+    [self.uploadViewController.send setEnabled:YES];
     [self.navigationController pushViewController:self.uploadViewController animated:YES];
 }
 
