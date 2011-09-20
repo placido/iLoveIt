@@ -15,6 +15,7 @@
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
+    NSLog(@"Initialising GridViewController");
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         UIScrollView *myScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, 320, 480)];
@@ -47,6 +48,15 @@
     return self;
 }
 
+-(void)viewDidAppear:(BOOL)animated {
+    NSLog(@"GridViewController appeared");
+    TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
+    // release the uploadViewController if there is one
+    delegate.uploadViewController = nil;
+    [super viewDidAppear:animated];
+    
+}
+
 - (void)didReceiveMemoryWarning
 {
     // Releases the view if it doesn't have a superview.
@@ -58,6 +68,7 @@
 
 - (void)viewDidLoad
 {
+    NSLog(@"Loaded grid view");
     [super viewDidLoad];
 
 }
@@ -77,7 +88,7 @@
 
 - (void)dealloc
 {
-    NSLog(@"Deallocating");
+    NSLog(@"Deallocating GridViewController");
     [_thumbnails release];
     [_spinner release];
     [_scrollView release];

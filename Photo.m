@@ -43,6 +43,7 @@
 
 - (void)dealloc
 {
+   // NSLog(@"Deallocating Photo");
     [_location release];
     [_caption release];
     [_urlThumbnail release];

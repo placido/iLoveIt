@@ -21,6 +21,7 @@
 
 - (id)init
 {
+    NSLog(@"Initialising Localisation");
     self = [super init];
     if (self) {
         nbLocationUpdates = 0;
@@ -79,7 +80,7 @@
 
 -(void)startRequest
 {
-    NSString *url = [[NSString alloc] initWithFormat:@"http://ec2-79-125-90-3.eu-west-1.compute.amazonaws.com:8080/ilove/api/app?lat=%f&lng=%f", self.bestEffortLocation.coordinate.latitude, self.bestEffortLocation.coordinate.longitude];
+    NSString *url = [[NSString alloc] initWithFormat:@"http://ec2-79-125-90-3.eu-west-1.compute.amazonaws.com:8080/ilove/api/app?lat=%f&lng=%f&ts=%d", self.bestEffortLocation.coordinate.latitude, self.bestEffortLocation.coordinate.longitude, [NSNumber numberWithDouble: [[NSDate date] timeIntervalSince1970]]];
     NSLog(@"Adding request to queue: %@", url);
     ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:[NSURL URLWithString:url]];
     [request setDelegate:self];
@@ -114,12 +115,18 @@
     // Process the neighbourhoods
     NSMutableArray *newNeighbourhoods = [[NSMutableArray alloc] init];
     NSArray *hoods = [jsonObject objectForKey:@"hoods"];
+
     for (int i=0; i<[hoods count]; i++) {
         NSDictionary *hood = [hoods objectAtIndex:i];
         [newNeighbourhoods insertObject:[hood objectForKey:@"name"] atIndex:i];
         // NSLog(@"Neighbourhood %d is %@", i, [newNeighbourhoods objectAtIndex:i]);
     }
+    // TO DO: Set error alert
+    if ([newNeighbourhoods count] == 0) {
+        [newNeighbourhoods insertObject:@"it" atIndex:0];
+    }
     self.neighbourhoods = newNeighbourhoods;
+
     
     // Set the nav bar title
     TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
@@ -228,7 +235,7 @@
 
 - (void)dealloc
 {
-    NSLog(@"Deallocating");
+    NSLog(@"Deallocating Localisation");
     [requestQueue release];
     [responseQueue release];
     [photos release];

@@ -22,6 +22,7 @@
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
+    NSLog(@"Initialising DetailViewController");
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         
@@ -79,8 +80,6 @@
         [myCaption release];
         [myMapView release];
         [myPin release];
-
-
     }
     return self;
 }
@@ -171,7 +170,7 @@
 
 - (void)dealloc
 {
-    NSLog(@"Deallocating");
+    NSLog(@"Deallocating DetaiViewController");
     [_request clearDelegatesAndCancel];
     [_pin release];
     [_scrollView release];

@@ -16,17 +16,18 @@
 @synthesize neighbourhood = _neighbourhood;
 @synthesize send = _send;
 @synthesize progress = _progress;
+@synthesize label = _label;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
+    NSLog(@"Initialising UploadViewController");
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         
         self.view.backgroundColor = [UIColor blackColor];
 
         // Initialise caption input field
-        CGRect frame = CGRectMake(10,10,230,30);
-        UITextField *aCaption = [[UITextField alloc] initWithFrame:frame];
+        UITextField *aCaption = [[UITextField alloc] initWithFrame:CGRectMake(10,10,230,30)];
         aCaption.borderStyle = UITextBorderStyleRoundedRect;
         aCaption.textColor = [UIColor blackColor];
         aCaption.font = [UIFont systemFontOfSize:17.0];
@@ -41,11 +42,24 @@
         [self.view addSubview:self.caption];
         
         // Initialise progress bar
-        UIProgressView *myProgress = [[UIProgressView alloc] initWithFrame:CGRectMake(10, 50, 300, 20)];
+        UIProgressView *myProgress = [[UIProgressView alloc] initWithFrame:CGRectMake(10, 30, 300, 20)];
         myProgress.progressViewStyle = UIProgressViewStyleBar;
+        [myProgress setHidden:YES];
         self.progress = myProgress;
         [self.view addSubview:self.progress];
         [myProgress release];
+        
+        // Initialise label
+        UILabel *myLabel = [[UILabel alloc]  initWithFrame:CGRectMake(10, 7, 300, 20)];
+        myLabel.textAlignment =  UITextAlignmentCenter;
+        myLabel.textColor = [UIColor whiteColor];
+        myLabel.backgroundColor = [UIColor blackColor];
+        myLabel.font = [UIFont fontWithName:@"Arial Rounded MT Bold" size:(11.0)];
+        [myLabel setHidden:YES];
+        [myLabel setText:@"Sending..."];
+        self.label = myLabel;
+        [self.view addSubview:self.label];
+        [myLabel release];
         
         // Initialise picker
        // UIPickerView *myNeighbourhood = [[UIPickerView alloc] initWithFrame:CGRectMake(10, 40, 320, 50)];
@@ -65,7 +79,7 @@
         
         // Initialise image view
         UIImageView *anImageView = [[UIImageView alloc] init];
-        anImageView.frame =  CGRectMake(0, 80, 320, 320);
+        anImageView.frame =  CGRectMake(0, 50, 320, 320);
         self.imageView = anImageView;
         [anImageView release];
         [self.view addSubview:self.imageView];
@@ -105,6 +119,9 @@
     [self.caption resignFirstResponder]; // remove keyboard
     [self.send setHidden:YES]; // remove button
     [self.send setEnabled:NO]; 
+    [self.caption setHidden:YES]; 
+    [self.progress setHidden:NO];
+    [self.label setHidden:NO];
     
     // Prepare the HTTP Post request
     NSURL *url = [NSURL URLWithString:@"http://ec2-79-125-90-3.eu-west-1.compute.amazonaws.com:8080/ilove/api/photo"];
@@ -191,7 +208,8 @@
 
 - (void)dealloc
 {
-    NSLog(@"Deallocating");
+    NSLog(@"Deallocating UploadViewController");
+    [_label release];
     [_progress release];
     [_send release];
     [_imageView release];

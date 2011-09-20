@@ -9,6 +9,8 @@
 #import "TableAppAppDelegate.h"
 #import "GridViewController.h"
 #import "UploadViewController.h"
+#import "ASIHTTPRequest.h"
+#import "ASIDownloadCache.h"
 
 @implementation TableAppAppDelegate
 
@@ -27,15 +29,7 @@
     GridViewController *aGridViewController = [[GridViewController alloc] initWithNibName:@"GridViewController" bundle:nil];
     aGridViewController.navigationItem.title = @"I love it around here";
     self.gridViewController = aGridViewController;
-   
-    // Create detail view
-    DetailViewController *aDetailViewController = [[DetailViewController alloc] initWithNibName:@"DetailViewController" bundle:nil];
-    self.detailViewController = aDetailViewController;
-    
-    // Create upload view
-    UploadViewController *aUploadViewController = [[UploadViewController alloc] initWithNibName:@"UploadViewController" bundle:nil];
-    self.uploadViewController = aUploadViewController;
-    
+
     // Create navigation controller
     UINavigationController *aNavigationController = [[UINavigationController alloc] initWithRootViewController:aGridViewController];
     [aNavigationController setNavigationBarHidden:NO animated:YES];
@@ -53,16 +47,16 @@
     Localisation *aLocalisation = [[Localisation alloc] init];
     self.localisation = aLocalisation;
     
+    // Turn HTTP cacheing on
+    [ASIHTTPRequest setDefaultCache:[ASIDownloadCache sharedCache]];
+    
     // Release initial instances
     [aLocalisation release];
     [aCameraButton release];
     [anActionSheet release];
     [aNavigationController release];
-    [aUploadViewController release];
     [aGridViewController release];
-    [aDetailViewController release];
 
-    
     // Set the view
     [self.window addSubview:self.navigationController.view];
     [self.window makeKeyAndVisible];
@@ -77,6 +71,8 @@
 {
     // show the action sheet
     [self.actionSheet showInView:self.gridViewController.scrollView];
+    // free memory: release the detail view
+    self.detailViewController = nil;
     // create image picker controller
     UIImagePickerController *anImagePickerController = [[UIImagePickerController alloc] init];
     anImagePickerController.delegate = self;
@@ -97,6 +93,8 @@
             self.imagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
             [self.gridViewController presentModalViewController:self.imagePickerController animated:YES];
             break;
+        case 2:
+            self.imagePickerController = nil;
     }
 }
 
@@ -109,11 +107,15 @@
         UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
     }
     [self.gridViewController dismissModalViewControllerAnimated:YES];
-    self.imagePickerController = nil;
-    // TO DO: Could also set the detailViewController to nil to save memory
-    [self.uploadViewController.imageView setImage:image];
-    [self.uploadViewController.send setHidden:NO];
-    [self.uploadViewController.send setEnabled:YES];
+    self.imagePickerController = nil;    
+    
+    // Create upload view
+    if (self.uploadViewController == nil) {
+        UploadViewController *anUploadViewController = [[UploadViewController alloc] initWithNibName:@"UploadViewController" bundle:nil];
+        [anUploadViewController.imageView setImage:image];
+        self.uploadViewController = anUploadViewController;
+        [anUploadViewController release];
+    }
     [self.navigationController pushViewController:self.uploadViewController animated:YES];
 }
 
@@ -121,6 +123,7 @@
 {
     NSLog(@"Cancelled");
     [self.gridViewController dismissModalViewControllerAnimated:YES];
+    self.imagePickerController = nil;    
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application

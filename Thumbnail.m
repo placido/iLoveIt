@@ -21,6 +21,7 @@
 
 - (id)init
 {
+    // NSLog(@"Initialising Thumbnail");
     self = [super init];
     if (self) {
         // Initialization code here.
@@ -111,12 +112,19 @@
 {
     Photo *myPhoto = (Photo *)(self.photo);
     TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
+    if (delegate.detailViewController == nil) {
+        // Create detail view
+        DetailViewController *aDetailViewController = [[DetailViewController alloc] initWithNibName:@"DetailViewController" bundle:nil];
+        delegate.detailViewController = aDetailViewController;
+        [aDetailViewController release];
+    }
     [delegate.detailViewController setThePhoto:myPhoto];
     [delegate.navigationController pushViewController:delegate.detailViewController animated:YES];
 }
 
 - (void)dealloc
 {
+    // NSLog(@"Deallocating Thumbnail");
     [_request clearDelegatesAndCancel];
     [_imageView release];
     [_spinner release];
