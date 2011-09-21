@@ -119,6 +119,7 @@
         [aDetailViewController release];
     }
     [delegate.detailViewController setThePhoto:myPhoto];
+    [delegate.detailViewController.scrollView setContentOffset:CGPointMake(0, 0) animated:YES]; // reset the scroll view to the top
     [delegate.navigationController pushViewController:delegate.detailViewController animated:YES];
 }
 
