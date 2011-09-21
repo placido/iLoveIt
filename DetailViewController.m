@@ -59,7 +59,6 @@
         
         // Create the map
         MKMapView *myMapView = [[MKMapView alloc] initWithFrame:CGRectMake(0, 360, 320, 320)];
-        myMapView.showsUserLocation = YES;
         self.mapView = myMapView;
         
         // Create the pin
@@ -148,6 +147,16 @@
 }
 
 #pragma mark - View lifecycle
+
+-(void)viewDidAppear:(BOOL)animated {
+    [self.mapView setShowsUserLocation:YES]; // turn on location service when view in sight
+    [super viewDidAppear:animated];
+}
+
+-(void)viewDidDisappear:(BOOL)animated {
+    [self.mapView setShowsUserLocation:NO]; // turn off location service when view not in sight
+    [super viewDidDisappear:animated];
+}
 
 - (void)viewDidLoad
 {
