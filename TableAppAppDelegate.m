@@ -61,8 +61,7 @@
     [self.window addSubview:self.navigationController.view];
     [self.window makeKeyAndVisible];
     
-    // start the application
-    [self.localisation startLocalisation];
+    // The application gets started in the DidBecomeActive 
 
     return YES;
 }
@@ -154,6 +153,8 @@
     /*
      Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
      */
+    NSLog(@"applicationDidBecomeActive invoked: start localisation");
+    [self.localisation startLocalisation];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application
