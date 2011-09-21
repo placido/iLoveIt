@@ -8,6 +8,7 @@
 
 #import "Photo.h"
 #import "TableAppAppDelegate.h"
+#import "Constants.h"
 
 @implementation Photo
 
@@ -34,7 +35,7 @@
    // NSLog(@"Initialising photo %@ with caption %@", self, myCaption);
     self.photoId = myPhotoId;
     self.caption = myCaption;
-    NSString *baseUrl = [NSString stringWithFormat:@"http://d1w26viojcn1vr.cloudfront.net/uploads/%@/", self.photoId];
+    NSString *baseUrl = [NSString stringWithFormat:@"%@/%@/", cdnUrl, self.photoId];
     self.urlThumbnail = [NSURL URLWithString:[baseUrl stringByAppendingString:@"small.jpeg"]];
     self.urlLarge = [NSURL URLWithString:[baseUrl stringByAppendingString:@"large.jpeg"]];
     self.location = myLocation;

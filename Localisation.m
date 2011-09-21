@@ -12,6 +12,7 @@
 #import "Thumbnail.h"
 #import "GridViewController.h"
 #import "ASIHTTPRequest.h"
+#import "Constants.h"
 
 @implementation Localisation
 
@@ -80,7 +81,7 @@
 
 -(void)startRequest
 {
-    NSString *url = [[NSString alloc] initWithFormat:@"http://ec2-79-125-90-3.eu-west-1.compute.amazonaws.com:8080/ilove/api/app?lat=%f&lng=%f&ts=%d", self.bestEffortLocation.coordinate.latitude, self.bestEffortLocation.coordinate.longitude, [NSNumber numberWithDouble: [[NSDate date] timeIntervalSince1970]]];
+    NSString *url = [[NSString alloc] initWithFormat:@"%@/app?lat=%f&lng=%f&ts=%d", apiUrl, self.bestEffortLocation.coordinate.latitude, self.bestEffortLocation.coordinate.longitude, [NSNumber numberWithDouble: [[NSDate date] timeIntervalSince1970]]];
     NSLog(@"Adding request to queue: %@", url);
     ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:[NSURL URLWithString:url]];
     [request setDelegate:self];

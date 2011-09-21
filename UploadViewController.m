@@ -9,6 +9,7 @@
 #import "UploadViewController.h"
 #import "TableAppAppDelegate.h"
 #import "ASIFormDataRequest.h"
+#import "Constants.h"
 
 @implementation UploadViewController
 @synthesize imageView = _imageView;
@@ -124,7 +125,7 @@
     [self.label setHidden:NO];
     
     // Prepare the HTTP Post request
-    NSURL *url = [NSURL URLWithString:@"http://ec2-79-125-90-3.eu-west-1.compute.amazonaws.com:8080/ilove/api/photo"];
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/photo", apiUrl]];
     ASIFormDataRequest *request = [[ASIFormDataRequest alloc] initWithURL:url];
     request.delegate = self;
     
