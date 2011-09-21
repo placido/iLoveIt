@@ -156,6 +156,7 @@
     [request release];
     TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
     [delegate.navigationController popToRootViewControllerAnimated:YES];
+    [delegate.gridViewController.scrollView setContentOffset:CGPointMake(0, 0) animated:YES]; // reset the scroll view to the top
     [delegate.localisation startRequest];
 }
 
