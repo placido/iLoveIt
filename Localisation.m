@@ -19,6 +19,7 @@
 @synthesize locationManager=_locationManager;
 @synthesize neighbourhoods=_neighbourhoods;
 @synthesize bestEffortLocation=_bestEffortLocation;
+@synthesize uploadPhotoLocation=_uploadPhotoLocation;
 
 - (id)init
 {
@@ -50,7 +51,7 @@
     #if TARGET_IPHONE_SIMULATOR
     // Simulate a didUpdateToLocation message
     NSDate* now = [[NSDate alloc] init];
-    CLLocation *simulatedLocation = [[CLLocation alloc] initWithCoordinate:CLLocationCoordinate2DMake(51.0, -1.0) altitude:1.0 horizontalAccuracy:kCLLocationAccuracyThreeKilometers verticalAccuracy:kCLLocationAccuracyThreeKilometers timestamp:now];
+    CLLocation *simulatedLocation = [[CLLocation alloc] initWithCoordinate:CLLocationCoordinate2DMake(45.0, -1.0) altitude:1.0 horizontalAccuracy:kCLLocationAccuracyThreeKilometers verticalAccuracy:kCLLocationAccuracyThreeKilometers timestamp:now];
     [self locationManager:self.locationManager didUpdateToLocation:simulatedLocation fromLocation:simulatedLocation];
     [simulatedLocation release];
     [now release];
@@ -240,6 +241,7 @@
     [requestQueue release];
     [responseQueue release];
     [photos release];
+    [_uploadPhotoLocation release];
     [_bestEffortLocation release];
     [_neighbourhoods release];
     [_locationManager stopUpdatingLocation];

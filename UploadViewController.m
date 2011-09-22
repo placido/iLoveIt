@@ -134,7 +134,7 @@
     [request setPostValue:self.caption.text forKey:@"caption"];
     TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
     // Pass coordindate
-    CLLocation *location = delegate.localisation.bestEffortLocation;
+    CLLocation *location = delegate.localisation.uploadPhotoLocation;
     NSString *lat = [NSString stringWithFormat:@"%f", location.coordinate.latitude];
     NSString *lng = [NSString stringWithFormat:@"%f", location.coordinate.longitude];
     [request setPostValue:lat forKey:@"lat"];

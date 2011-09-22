@@ -6,6 +6,7 @@
 //  Copyright 2011 __MyCompanyName__. All rights reserved.
 //
 
+#import <AssetsLibrary/AssetsLibrary.h>
 #import "TableAppAppDelegate.h"
 #import "GridViewController.h"
 #import "UploadViewController.h"
@@ -97,21 +98,52 @@
     }
 }
 
-- (void)imagePickerController:(UIImagePickerController *)picker 
-        didFinishPickingImage:(UIImage *)image
-                  editingInfo:(NSDictionary *)editingInfo
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
-    NSLog(@"Got new image");
-    if (picker.sourceType == UIImagePickerControllerSourceTypeCamera) {
-        UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
+    NSLog(@"Selected image");
+    NSURL *url = [info objectForKey:@"UIImagePickerControllerReferenceURL"];
+    UIImage *image = [info objectForKey:UIImagePickerControllerEditedImage];
+
+    // if camera image: save
+    if ([picker sourceType] == UIImagePickerControllerSourceTypeCamera) {
+        UIImageWriteToSavedPhotosAlbum([info objectForKey:UIImagePickerControllerOriginalImage], nil, nil, nil);
     }
+
+    // resize the image
+    CGSize newSize = CGSizeMake(640, 640);
+    UIGraphicsBeginImageContext(newSize);
+    [image drawInRect:CGRectMake(0, 0, newSize.width, newSize.height)];
+    UIImage *resizedImage = UIGraphicsGetImageFromCurrentImageContext();    
+    UIGraphicsEndImageContext();
+
+    // By default: set image location to that of the device
+    self.localisation.uploadPhotoLocation = self.localisation.bestEffortLocation;
+    // But if image is from photo library, try override location with geotag of the photo 
+    if ([picker sourceType] == UIImagePickerControllerSourceTypePhotoLibrary) {        
+        ALAssetsLibraryAssetForURLResultBlock resultblock = ^(ALAsset *myasset)
+        {
+            // Get the location property from the asset  
+            CLLocation *photoLocation = [myasset valueForProperty:ALAssetPropertyLocation];
+            self.localisation.uploadPhotoLocation = photoLocation;
+        };
+        // This block will handle errors:
+        ALAssetsLibraryAccessFailureBlock failureblock  = ^(NSError *myerror)
+        {
+            NSLog(@"Cannot get asset - %@",[myerror localizedDescription]);
+        };
+        // Use the url to get the asset from ALAssetsLibrary, the blocks that we just created will handle results
+        ALAssetsLibrary* assetslibrary = [[[ALAssetsLibrary alloc] init] autorelease];
+        [assetslibrary assetForURL:url 
+                       resultBlock:resultblock
+                      failureBlock:failureblock];
+    }
+      
     [self.gridViewController dismissModalViewControllerAnimated:YES];
     self.imagePickerController = nil;    
-    
     // Create upload view
     if (self.uploadViewController == nil) {
         UploadViewController *anUploadViewController = [[UploadViewController alloc] initWithNibName:@"UploadViewController" bundle:nil];
-        [anUploadViewController.imageView setImage:image];
+        [anUploadViewController.imageView setImage:resizedImage];
         self.uploadViewController = anUploadViewController;
         [anUploadViewController release];
     }

@@ -18,6 +18,7 @@
     NSOperationQueue *requestQueue;
     NSOperationQueue *responseQueue;
     CLLocation *bestEffortLocation;
+    CLLocation *uploadPhotoLocation;
     int nbLocationUpdates;
 }
 -(void)startLocalisation;
@@ -26,6 +27,6 @@
 @property (nonatomic, retain) CLLocationManager *locationManager;
 @property (nonatomic, retain) NSMutableArray *neighbourhoods;
 @property (nonatomic, retain) CLLocation *bestEffortLocation;
-
+@property (nonatomic, retain) CLLocation *uploadPhotoLocation;
 @end
 
