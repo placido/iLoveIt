@@ -100,10 +100,29 @@
     [self.imageView setHidden:YES];
     [self.spinner startAnimating];
     
-    // Center the map
-    MKCoordinateSpan span = MKCoordinateSpanMake(0.005f, 0.005f);  // Hard-coded zoom level
-    MKCoordinateRegion region = MKCoordinateRegionMake([self.photo.location coordinate], span);
+    // Center and zoom the map
+    // TO DO: Zoom out a bit if bestEffortLocation and photo.location are almost identical
+    TableAppAppDelegate *delegate = (TableAppAppDelegate *)[UIApplication sharedApplication].delegate;
+    CLLocationCoordinate2D southWest = delegate.localisation.bestEffortLocation.coordinate;
+    CLLocationCoordinate2D northEast = southWest;
+    southWest.latitude = MIN(southWest.latitude, self.photo.location.coordinate.latitude);
+    southWest.longitude = MIN(southWest.longitude, self.photo.location.coordinate.longitude);
+    northEast.latitude = MAX(northEast.latitude, self.photo.location.coordinate.latitude);
+    northEast.longitude = MAX(northEast.longitude, self.photo.location.coordinate.longitude);
+    CLLocation *locSouthWest = [[CLLocation alloc] initWithLatitude:southWest.latitude longitude:southWest.longitude];
+    CLLocation *locNorthEast = [[CLLocation alloc] initWithLatitude:northEast.latitude longitude:northEast.longitude];
+    // This is a diag distance (if you wanted tighter you could do NE-NW or NE-SE)
+    CLLocationDistance meters = [locSouthWest distanceFromLocation:locNorthEast];
+    MKCoordinateRegion region;
+    region.center.latitude = (southWest.latitude + northEast.latitude) / 2.0;
+    region.center.longitude = (southWest.longitude + northEast.longitude) / 2.0;
+    region.span.latitudeDelta = meters / 111319.5;
+    region.span.longitudeDelta = 0.0;
     [self.mapView setRegion:region animated:YES];
+    //_savedRegion = [_mapView regionThatFits:region];
+    //[_mapView setRegion:_savedRegion animated:YES];
+    [locSouthWest release];
+    [locNorthEast release];
     
     // Set the pin   
     [self.pin setCoordinate:self.photo.location.coordinate title:self.photo.caption subtitle:@""];
@@ -115,14 +134,6 @@
     [theRequest setTimeOutSeconds:15];
     [theRequest setNumberOfTimesToRetryOnTimeout:2];
     self.request = theRequest; 
-
-   // NSOperationQueue *queue = [NSOperationQueue new];
-   // NSInvocationOperation *operation = [[NSInvocationOperation alloc] 
-  //                                      initWithTarget:self
-  //                                      selector:@selector(loadImageAtUrl:) 
-  //                                      object:self.photo.urlLarge];
-  //  [queue addOperation:operation]; 
-  //  [operation release];
 }
 
 - (void)requestFailed:(ASIHTTPRequest *)theRequest
