@@ -25,7 +25,6 @@
     NSLog(@"Initialising Localisation");
     self = [super init];
     if (self) {
-        nbLocationUpdates = 0;
         CLLocationManager *aLocationManager = [[CLLocationManager alloc] init];
         aLocationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters;
         aLocationManager.delegate = self;
@@ -46,6 +45,7 @@
 }
 
 -(void)startLocalisation {
+    nbLocationUpdates = 0;
     [self.locationManager startUpdatingLocation];
     #if TARGET_IPHONE_SIMULATOR
     // Simulate a didUpdateToLocation message
