@@ -82,7 +82,7 @@
 
 -(void)startRequest
 {
-    NSString *url = [[NSString alloc] initWithFormat:@"%@/app?lat=%f&lng=%f&ts=%d", apiUrl, self.bestEffortLocation.coordinate.latitude, self.bestEffortLocation.coordinate.longitude, [NSNumber numberWithDouble: [[NSDate date] timeIntervalSince1970]]];
+    NSString *url = [[NSString alloc] initWithFormat:@"%@/nearby?lat=%f&lng=%f&ts=%d", apiUrl, self.bestEffortLocation.coordinate.latitude, self.bestEffortLocation.coordinate.longitude, [NSNumber numberWithDouble: [[NSDate date] timeIntervalSince1970]]];
     NSLog(@"Adding request to queue: %@", url);
     ASIHTTPRequest *request = [ASIHTTPRequest requestWithURL:[NSURL URLWithString:url]];
     [request setDelegate:self];
@@ -139,17 +139,8 @@
     NSArray *jsonPhotos = [jsonObject objectForKey:@"photos"];
     for (int i=0; i<[jsonPhotos count]; i++) {
         NSDictionary* jsonPhoto = [jsonPhotos objectAtIndex:i];
-        NSDictionary *photoIdDict = [jsonPhoto objectForKey:@"_id"];
-        NSString *photoId = [photoIdDict objectForKey:@"$oid"];
-        NSString *caption = [jsonPhoto objectForKey:@"caption"];
-        NSArray *coordinates = [jsonPhoto objectForKey:@"location"];
-        NSNumber *latitude = [coordinates objectAtIndex:0];
-        NSNumber *longitude = [coordinates objectAtIndex:1];
-        CLLocation *location = [[CLLocation alloc] initWithLatitude:latitude.doubleValue longitude:longitude.doubleValue];   
-       // NSLog(@"Photo id: %@ / Caption: %@ / Coordinates: (%@, %@)", photoId, caption, latitude, longitude);
-        Photo *photo = [[Photo alloc] initWithPhotoId:photoId caption:caption location:location];
+        Photo *photo = [[Photo alloc] initFromJSON:jsonPhoto];
         [newPhotos insertObject:photo atIndex:i];
-        [location release];
     }
     NSMutableArray *oldPhotos = photos;
     photos = newPhotos;

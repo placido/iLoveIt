@@ -9,7 +9,7 @@
 #import "Constants.h"
 
 @implementation Constants
-NSString * const apiUrl = @"http://ec2-79-125-90-3.eu-west-1.compute.amazonaws.com:8080/ilove/api/";
+NSString * const apiUrl = @"http://ec2-79-125-90-3.eu-west-1.compute.amazonaws.com:8080/ilove/api/app";
 NSString * const cdnUrl = @"http://d1w26viojcn1vr.cloudfront.net/uploads";
 
 - (id)init

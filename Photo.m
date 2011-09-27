@@ -42,6 +42,22 @@
     return self;
 }
 
+- (id) initFromJSON:(NSDictionary*)json
+{
+    self = [self init];
+    NSDictionary *photoIdDict = [json objectForKey:@"_id"];
+    self.photoId = [photoIdDict objectForKey:@"$oid"];
+    self.caption = [json objectForKey:@"caption"]; 
+    NSString *baseUrl = [NSString stringWithFormat:@"%@/%@/", cdnUrl, self.photoId];
+    self.urlThumbnail = [NSURL URLWithString:[baseUrl stringByAppendingString:@"small.jpeg"]];
+    self.urlLarge = [NSURL URLWithString:[baseUrl stringByAppendingString:@"large.jpeg"]];
+    NSArray *coordinates = [json objectForKey:@"location"];
+    NSNumber *latitude = [coordinates objectAtIndex:0];
+    NSNumber *longitude = [coordinates objectAtIndex:1];
+    self.location = [[[CLLocation alloc] initWithLatitude:latitude.doubleValue longitude:longitude.doubleValue] autorelease];  
+    return self;
+}
+
 - (void)dealloc
 {
    // NSLog(@"Deallocating Photo");

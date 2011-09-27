@@ -19,6 +19,7 @@
 }
 
 -(id)initWithPhotoId:(NSString*)photoId caption:(NSString*)caption location:(CLLocation*)location;
+-(id)initFromJSON:(NSDictionary*)json;
 
 @property(nonatomic, retain) NSString *photoId;
 @property(nonatomic, retain) NSString *caption;
